@@ -33,6 +33,13 @@ jobs:
       - name: Install Dependencies
         run: npm install @actions/github axios
 
+      - name: Install Dependencies and jq
+        run: |
+          npm install @actions/github axios
+          sudo apt-get update
+          sudo apt-get install jq
+        shell: bash
+
       - name: Get Pull Request Details
         id: pr_details
         run: |
