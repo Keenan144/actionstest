@@ -56,8 +56,8 @@ jobs:
           echo "::set-output name=approved_count::${approved_count}"
 
       - name: Print Approved Count
-        run:
-          echo "Number of approvals: ${{ steps.approved_reviews.outputs.approved_count }}"
+        id: print_approved_count
+        run: "echo Number of approvals: ${{ steps.approved_reviews.outputs.approved_count }}"
 
       - name: Output variable
         id: output_variable
