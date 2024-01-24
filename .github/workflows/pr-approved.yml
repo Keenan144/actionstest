@@ -1,0 +1,23 @@
+name: PR Approved Action
+
+on:
+  pull_request_review:
+    types:
+      - submitted
+
+jobs:
+  pr_approved:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check if PR is approved
+        id: check_approval
+        run: echo "::set-output name=approved::false"
+
+      - name: Set Output
+        if: ${{ github.event.review.state == 'approved' }}
+        run: echo "::set-output name=approved::true"
+
+      - name: Run on PR Approval
+        if: ${{ steps.check_approval.outputs.approved == 'true' }}
+        run: echo "The PR has been approved! This action ran successfully."
