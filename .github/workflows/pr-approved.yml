@@ -1,4 +1,4 @@
-name: PR Approved Action
+name: PR First Approval Action
 
 on:
   pull_request_review:
@@ -6,11 +6,11 @@ on:
       - submitted
 
 jobs:
-  pr_approved:
+  pr_first_approval:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check if PR is approved
+      - name: Check if PR is already approved
         id: check_approval
         run: echo "::set-output name=approved::false"
 
@@ -18,6 +18,14 @@ jobs:
         if: ${{ github.event.review.state == 'approved' }}
         run: echo "::set-output name=approved::true"
 
-      - name: Run on PR Approval
-        if: ${{ steps.check_approval.outputs.approved == 'true' }}
-        run: echo "The PR has been approved! This action ran successfully."
+      - name: Check if this is the first approval
+        id: check_first_approval
+        run: echo "::set-output name=first_approval::false"
+
+      - name: Set First Approval Output
+        if: ${{ steps.check_approval.outputs.approved == 'true' && steps.check_first_approval.outputs.first_approval != 'true' }}
+        run: echo "::set-output name=first_approval::true"
+
+      - name: Run on First Approval
+        if: ${{ steps.check_first_approval.outputs.first_approval == 'true' }}
+        run: echo "This is the first approval for the PR. The action ran successfully."
