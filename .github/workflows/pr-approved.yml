@@ -14,6 +14,10 @@ jobs:
         id: check_approval
         run: echo "::set-output name=approved::false"
 
+      - name: Output variable
+        id: output_variable
+        run: echo "${{ github.event.review.state }} ${{ check_approval.name }}"
+
       - name: Set Output
         if: ${{ github.event.review.state == 'approved' }}
         run: echo "::set-output name=approved::true"
