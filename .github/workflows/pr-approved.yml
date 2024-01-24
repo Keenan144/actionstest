@@ -24,11 +24,9 @@ jobs:
       - name: Get Approved Reviews
         id: approved_reviews
         run: |
-          # Use GitHub API to fetch reviews
           reviews=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             "https://api.github.com/repos/${repo_owner}/${repo_name}/pulls/${pr_number}/reviews")
-          
-          # Count the number of approved reviews
+
           approved_count=$(echo "$reviews" | jq '[.[] | select(.state=="APPROVED")] | length')
           echo "::set-output name=approved_count::${approved_count}"
 
