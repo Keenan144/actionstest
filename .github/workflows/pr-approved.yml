@@ -16,7 +16,7 @@ jobs:
 
       - name: Output variable
         id: output_variable
-        run: echo "${{ github.event.review.state }} ${{ check_approval.name }}"
+        run: echo "${{ github.event.review.state }}"
 
       - name: Set Output
         if: ${{ github.event.review.state == 'approved' }}
