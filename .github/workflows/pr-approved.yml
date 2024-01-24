@@ -14,10 +14,6 @@ jobs:
         id: check_approval
         run: echo "::set-output name=approved::false"
 
-      - name: Output variable
-        id: output_variable
-        run: echo "${{ github.event.review.state }}"
-
       - name: Set Output
         if: ${{ github.event.review.state == 'approved' }}
         run: echo "::set-output name=approved::true"
@@ -26,8 +22,12 @@ jobs:
         id: check_first_approval
         run: echo "::set-output name=first_approval::false"
 
+      - name: Output variable
+        id: output_variable
+        run: echo "${{ github.event.review.state }} ${{ steps.check_first_approval.outputs.first_approval }}"
+
       - name: Set First Approval Output
-        if: ${{ steps.check_approval.outputs.approved == 'true' && steps.check_first_approval.outputs.first_approval != 'true' }}
+        if: ${{ github.event.review.state == approved && steps.check_first_approval.outputs.first_approval != 'true' }}
         run: echo "::set-output name=first_approval::true"
 
       - name: Run on First Approval
