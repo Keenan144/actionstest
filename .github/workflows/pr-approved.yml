@@ -22,6 +22,43 @@ jobs:
         id: check_first_approval
         run: echo "::set-output name=first_approval::false"
 
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+
+      - name: Install Dependencies
+        run: npm install @actions/github axios
+
+      - name: Get Pull Request Details
+        id: pr_details
+        run: |
+          echo "::set-output name=pr_number::${{ github.event.pull_request.number }}"
+          echo "::set-output name=repo_owner::${{ github.event.repository.owner.login }}"
+          echo "::set-output name=repo_name::${{ github.event.repository.name }}"
+
+      - name: Get Approved Reviews
+        id: approved_reviews
+        run: |
+          pr_number="${{ steps.pr_details.outputs.pr_number }}"
+          repo_owner="${{ steps.pr_details.outputs.repo_owner }}"
+          repo_name="${{ steps.pr_details.outputs.repo_name }}"
+          
+          # Use GitHub API to fetch reviews
+          reviews=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${repo_owner}/${repo_name}/pulls/${pr_number}/reviews")
+          
+          # Count the number of approved reviews
+          approved_count=$(echo "$reviews" | jq '[.[] | select(.state=="APPROVED")] | length')
+          echo "::set-output name=approved_count::${approved_count}"
+
+      - name: Print Approved Count
+        run:
+          echo "Number of approvals: ${{ steps.approved_reviews.outputs.approved_count }}"
+
       - name: Output variable
         id: output_variable
         run: echo "${{ github.event.review.state }} ${{ steps.check_first_approval.outputs.first_approval }}"
