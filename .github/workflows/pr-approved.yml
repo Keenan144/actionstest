@@ -39,21 +39,27 @@ jobs:
           echo "::set-output name=pr_number::${{ github.event.pull_request.number }}"
           echo "::set-output name=repo_owner::${{ github.event.repository.owner.login }}"
           echo "::set-output name=repo_name::${{ github.event.repository.name }}"
+          echo "::set-output name=commit_sha::${{ github.event.pull_request.head.sha }}"
 
-      - name: Get Approved Reviews
-        id: approved_reviews
-        run: |
-          pr_number="${{ steps.pr_details.outputs.pr_number }}"
-          repo_owner="${{ steps.pr_details.outputs.repo_owner }}"
-          repo_name="${{ steps.pr_details.outputs.repo_name }}"
-          
-          # Use GitHub API to fetch reviews
-          reviews=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${repo_owner}/${repo_name}/pulls/${pr_number}/reviews")
-          
-          # Count the number of approved reviews
-          approved_count=$(echo "$reviews" | jq '[.[] | select(.state=="APPROVED")] | length')
-          echo "::set-output name=approved_count::${approved_count}"
+          - name: Get Approved Reviews Since Last Commit
+            id: approved_reviews_since_commit
+            run: |
+              pr_number="${{ steps.pr_details.outputs.pr_number }}"
+              repo_owner="${{ steps.pr_details.outputs.repo_owner }}"
+              repo_name="${{ steps.pr_details.outputs.repo_name }}"
+              commit_sha="${{ steps.pr_details.outputs.commit_sha }}"
+              
+              # Use GitHub API to fetch reviews
+              reviews=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+                "https://api.github.com/repos/${repo_owner}/${repo_name}/pulls/${pr_number}/reviews")
+              
+              # Filter reviews based on commit timestamp
+              approved_reviews=$(echo "$reviews" | jq -r --arg commit_sha "$commit_sha" \
+                '.[] | select(.state=="APPROVED" and .commit_id==$commit_sha)')
+              
+              # Count the number of approved reviews since the last commit
+              approved_count=$(echo "$approved_reviews" | jq 'length')
+              echo "::set-output name=approved_count::${approved_count}"
 
       - name: Print Approved Count
         id: print_approved_count
